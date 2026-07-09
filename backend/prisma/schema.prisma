@@ -18,6 +18,7 @@ model User{
   username  String      @unique
   password  String
   email     String      @unique
+  allPost   Post[]     
 }
 
 model Post{
@@ -26,6 +27,8 @@ model Post{
   content           String
   commment          String?
   publishStatus     PublishStatus 
+  userId            String
+  user              User        @relation(fields: [userId], references: [id])
 }
 
 enum PublishStatus{
