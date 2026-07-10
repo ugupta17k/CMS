@@ -1,12 +1,17 @@
 
 import "./index.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { Auth } from "./pages/Auth";
 
 export function App() {
   return (
-    <div className="container mx-auto p-8 text-center relative z-10">
-      <Auth />
+    <div className="">
+      <BrowserRouter>
+      <Routes>
+          <Route path="/Auth" element= {<Auth />}/>
+      </Routes>
+      </BrowserRouter>
     </div>
   );
 }
