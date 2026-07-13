@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
+import { BACKEND_URL } from "@/Config";
 
 export const Auth = () => {
   const [username, setUsername] = useState("");
@@ -10,47 +11,45 @@ export const Auth = () => {
   const [password, setpassword] = useState("");
   const [isRegistered, setisRegistered] = useState(true);
 
-  useEffect(() => {
+
     async function register() {
       try {
-        const res = await axios.post(`${process.env.BACKEND_URL}/register`, {
-          body: {
-            username,
-            email,
-            password,
-          },
+        const res = await axios.post(`${BACKEND_URL}/register`, {
+          username,
+          email,
+          password,
         });
-        const token = res.data.token;
-        localStorage.setItem("token", token);
+        setisRegistered(false)
       } catch (er) {
         console.log("there is some error", er);
       }
     }
-  },[]);
 
-  useEffect(() => {
     async function Login() {
       try {
-        const res = await axios.post(`${process.env.BACKEND_URL}/login`, {
-          body: {
+        const res = await axios.post(`${BACKEND_URL}/login`, {
             username,
-            email,
             password,
-          },
         });
+
         const token = res.data.token;
         localStorage.setItem("token", token);
+        window.location.href = "/Profile"
       } catch (er) {
         console.log("there is some error", er);
       }
     }
-  },[]);
-  function Submithandle() {
-    setUsername("");
-    setemail("");
-    setpassword("");
-    register();
-  }
+    
+    async function Submithandle() {
+      if (isRegistered) {
+        await register();
+      } else {
+        await Login();
+      }
+      setUsername("");
+      setemail("");
+      setpassword("");
+    }
   return (
     <div className="w-full h-screen flex ">
       <div className="w-[30%] h-full bg-zinc-900 flex justify-center items-center ">
@@ -63,6 +62,7 @@ export const Auth = () => {
         <div className="flex flex-col gap-5 border border-black rounded-2xl px-10 py-10">
           <Label>Username</Label>
           <Input
+          value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="Username"
           />
@@ -70,6 +70,7 @@ export const Auth = () => {
             <>
               <Label>Email</Label>
               <Input
+                value={email}
                 onChange={(e) => setemail(e.target.value)}
                 placeholder="Email"
                 className="pr-10"
@@ -78,22 +79,20 @@ export const Auth = () => {
           )}
           <Label>Password</Label>
           <Input
+            value={password}
             onChange={(e) => setpassword(e.target.value)}
             placeholder="Password"
             type="password"
           />
-          <Button onClick={Submithandle}>Submit</Button>
+          <Button className="cursor-pointer" onClick={Submithandle}>{isRegistered ? "Register" : "Login"}</Button>
           <div className="flex gap-2">
             <p>Already existed?</p>
-            <a
-              className="text-blue-700"
-              href=""
-              onClick={() => {
-                setisRegistered(false);
-              }}
+            <button
+              className="ml-2 cursor-pointer text-blue-600 hover:underline"
+              onClick={() => setisRegistered(!isRegistered)}
             >
-              Login
-            </a>
+              {isRegistered ? "Login" : "Register"}
+            </button>
           </div>
         </div>
       </div>

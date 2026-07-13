@@ -1,26 +1,28 @@
-import express  from "express";
+import express, { response }  from "express";
 import {prisma} from "../lib/prisma"
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken"
 import { authMiddleware } from "./middleware/AuthMiddleWare";
-
+import cors from "cors"
 
 const app = express()
 
+app.use(cors())
 app.use(express.json())
+
 
 app.post('/register', async (req, res)=>{
     const username = req.body.username
     const email = req.body.email
     const password = req.body.password
 
-    const hashPassword = bcrypt.hash(password, 10)
+    const hashPassword = await bcrypt.hash(password, 10)
 
     const response = await prisma.user.create({
         data: {
             username,
             email,
-            password : JSON.stringify(hashPassword)
+            password : hashPassword
         }
     })
 
@@ -32,12 +34,12 @@ app.post('/register', async (req, res)=>{
 })
 
 app.post("/login", async (req, res)=>{
-    const email = req.body.email
+    const username = req.body.username
     const password = req.body.password
 
     const response = await prisma.user.findUnique({
         where : { 
-            email,
+            username,
         }
     })
     if(!response){
@@ -46,7 +48,7 @@ app.post("/login", async (req, res)=>{
         })
     }
 
-    const isPasswordValid = bcrypt.compare(password, response.password)
+    const isPasswordValid = await bcrypt.compare(password, response.password)
     if(!isPasswordValid){
         return res.status(401).json({
             message : "Invalid password"
@@ -65,7 +67,33 @@ app.post("/login", async (req, res)=>{
 
 })
 
-app.post("/postSubmit", authMiddleware, async (req, res)=>{
+app.get("/me", authMiddleware, async (req, res) => {
+    const decoded = (req as any).user 
+    const userId = decoded.userId
+
+    try {
+        const user = await prisma.user.findUnique({
+           where : {
+            id : userId
+           },
+           select : {
+            username : true,
+            email : true
+           }
+        })
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" })
+        }
+
+        res.json({ user })
+    } catch (er) {
+        console.log(er)
+        res.status(500).json({ message: "Something went wrong" })
+    }
+})
+
+app.post("/createPost", authMiddleware, async (req, res)=>{
     const content = req.body.content
     const comment = req.body.comment
     const userId = (req as any).user
@@ -86,21 +114,31 @@ app.post("/postSubmit", authMiddleware, async (req, res)=>{
 
 app.get("/AllPost",authMiddleware , async (req, res)=>{
 
-    const userId = (req as any).user
+    const decoded = (req as any).user 
+    const userId = decoded.userId    
+    if(!userId){
+        res.status(404).json({
+            message: " userid notfound"
+        })
+    }
 
+    try { 
+        const post = await prisma.user.findUnique({
+            where : {
+                id : userId,
+            },
+            include : {
+                allPost : true
+            }
+        })
+        res.json({
+            post
+        })
+    }catch (er){
+        console.log(er);
+        
+    }
     
-    const response = await prisma.user.findMany({
-        where:{
-            id : userId
-        },
-        include : {
-            allPost : true
-        }
-    })
-
-    res.json({
-        response
-    })
 })
 
 app.get("/post/:postId", authMiddleware, async (req, res)=>{
