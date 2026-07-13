@@ -14,8 +14,8 @@ export function App() {
     <div className="">
       <BrowserRouter>
       <Routes>
-          <Route path="/" element= {<Home />}/>
-          <Route path="/Auth" element= {<Auth />}/>
+          {/* <Route path="/" element= {<Home />}/> */}
+          <Route path="/" element= {<Auth />}/>
           <Route path="/Profile" element= {<Profile />}/>
           <Route path="/CreatePost" element= {<CreatePost />}/>
       </Routes>
