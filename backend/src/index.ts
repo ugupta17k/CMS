@@ -96,7 +96,8 @@ app.get("/me", authMiddleware, async (req, res) => {
 app.post("/createPost", authMiddleware, async (req, res)=>{
     const content = req.body.content
     const comment = req.body.comment
-    const userId = (req as any).user
+    const decoded = (req as any).user
+    const userId  = decoded.userId
 
     const response = await prisma.post.create({
         data : {

@@ -35,8 +35,8 @@ export const Profile = () => {
           Authorization : `Bearer ${token}`
         }
       })
-      setPost(Getpost.data.post.AllPost)
-      console.log(post);
+      setPost(Getpost.data.post.allPost)
+           
     }
     getPost()
   },[])
